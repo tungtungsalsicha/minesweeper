@@ -3,164 +3,183 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Tabuleiro {
-private int largura;
-private int altura;
-private int numMinas;
-private Celula[][] tabuleiro;
-public Tabuleiro(int largura, int altura, int numMinas) {
-this.largura = largura;
-this.altura = altura;
-this.numMinas = numMinas;
-this.tabuleiro = new Celula[altura][largura];
-inicializarTabuleiro();
+    private int largura;
+    private int altura;
+    private int numMinas;
+    private Celula[][] tabuleiro;
+
+    public Tabuleiro(int largura, int altura, int numMinas) {
+        this.largura = largura;
+        this.altura = altura;
+        this.numMinas = numMinas;
+        tabuleiro = new Celula[altura][largura];
+        inicializarTabuleiro();
+    }
+
+    private void inicializarTabuleiro() {
+        for (int i = 0; i < altura; i++) {
+            for (int j = 0; j < largura; j++) {
+                tabuleiro[i][j] = new Celula(i, j);
+            }
+        }
+
+        Random rand = new Random();
+        int minasColocadas = 0;
+
+        while (minasColocadas < numMinas) {
+            int i = rand.nextInt(altura);
+            int j = rand.nextInt(largura);
+            if (!tabuleiro[i][j].temMina()) {
+                tabuleiro[i][j].colocarMina();
+                minasColocadas++;
+            }
+        }
+
+        for (int i = 0; i < altura; i++) {
+            for (int j = 0; j < largura; j++) {
+                if (!tabuleiro[i][j].temMina()) {
+                    tabuleiro[i][j].setNumeroMinasAdjacentes(
+                            contarMinasAdjacentes(i, j)
+                    );
+                }
+            }
+        }
+    }
+
+    private int contarMinasAdjacentes(int linha, int coluna) {
+        int minas = 0;
+
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int l = linha + i;
+                int c = coluna + j;
+
+                if (l >= 0 && l < altura && c >= 0 && c < largura) {
+                    if (tabuleiro[l][c].temMina()) {
+                        minas++;
+                    }
+                }
+            }
+        }
+        return minas;
+    }
+
+    public Celula getCelula(int linha, int coluna) {
+        return tabuleiro[linha][coluna];
+    }
+
+    public int getAltura() {
+        return altura;
+    }
+
+    public int getLargura() {
+        return largura;
+    }
+
+    public boolean verificarFimDeJogo() {
+        for (int i = 0; i < altura; i++) {
+            for (int j = 0; j < largura; j++) {
+                if (!tabuleiro[i][j].estaAberta() &&
+                        !tabuleiro[i][j].temMina()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
-// Inicializa o tabuleiro com minas e números
-private void inicializarTabuleiro() {
-// Preenche o tabuleiro com células sem minas
-for (int i = 0; i < altura; i++) {
-for (int j = 0; j < largura; j++) {
-tabuleiro[i][j] = new Celula(i, j);
-}
-}
-// Coloca as minas aleatoriamente
-Random rand = new Random();
-int minasColocadas = 0;
-while (minasColocadas < numMinas) {
-int i = rand.nextInt(altura);
-int j = rand.nextInt(largura);
-if (!tabuleiro[i][j].temMina()) {
-tabuleiro[i][j].colocarMina();
-minasColocadas++;
-}
-}
-// Preenche as células com os números de minas ao redor
-for (int i = 0; i < altura; i++) {
-for (int j = 0; j < largura; j++) {
-if (!tabuleiro[i][j].temMina()) {
-tabuleiro[i][j].setNumeroMinasAdjacentes(contarMinasAdjacentes(i, j));
-}
-}
-}
-}
-// Conta o número de minas adjacentes a uma célula
-private int contarMinasAdjacentes(int linha, int coluna) {
-int minasAdjacentes = 0;
-for (int i = -1; i <= 1; i++) {
-for (int j = -1; j <= 1; j++) {
-int novaLinha = linha + i;
-int novaColuna = coluna + j;
-if (novaLinha >= 0 && novaLinha < altura && novaColuna >= 0
-&& novaColuna < largura) {
-if (tabuleiro[novaLinha][novaColuna].temMina()) {
-minasAdjacentes++;
-}
-}
-}
-}
-return minasAdjacentes;
-}
-public Celula getCelula(int linha, int coluna) {
-return tabuleiro[linha][coluna];
-}
-public int getAltura() {
-return altura;
-}
-public int getLargura() {
-return largura;
-}
-public boolean verificarFimDeJogo() {
-for (int i = 0; i < altura; i++) {
-for (int j = 0; j < largura; j++) {
-if (!tabuleiro[i][j].estaAberta() &&
-!tabuleiro[i][j].temMina()) {
-return false; // Ainda existem células a serem abertas
-}
-}
-}
-return true; // Todas as células não-minadas foram abertas
-}
+class Celula {
+    private boolean temMina;
+    private int numeroMinasAdjacentes;
+    private boolean aberta;
+
+    public Celula(int linha, int coluna) {
+        temMina = false;
+        numeroMinasAdjacentes = 0;
+        aberta = false;
+    }
+
+    public boolean temMina() {
+        return temMina;
+    }
+
+    public void colocarMina() {
+        temMina = true;
+    }
+
+    public int getNumeroMinasAdjacentes() {
+        return numeroMinasAdjacentes;
+    }
+
+    public void setNumeroMinasAdjacentes(int n) {
+        numeroMinasAdjacentes = n;
+    }
+
+    public boolean estaAberta() {
+        return aberta;
+    }
+
+    public void abrir() {
+        aberta = true;
+    }
 }
 
-public class Celula {
-private int linha;
-private int coluna;
-private boolean temMina;
-private int numeroMinasAdjacentes;
-private boolean aberta;
-public Celula(int linha, int coluna) {
-this.linha = linha;
-this.coluna = coluna;
-this.temMina = false;
-this.numeroMinasAdjacentes = 0;
-this.aberta = false;
-}
-public boolean temMina() {
-return temMina;
-}
-public void colocarMina() {
-this.temMina = true;
-}
-public int getNumeroMinasAdjacentes() {
-return numeroMinasAdjacentes;
-}
-public void setNumeroMinasAdjacentes(int numeroMinasAdjacentes) {
-this.numeroMinasAdjacentes = numeroMinasAdjacentes;
-}
-public boolean estaAberta() {
-return aberta;
-}
-public void abrir() {
-this.aberta = true;
-}
-}
-public class BotaoCelula extends JButton {
-private int linha;
-private int coluna;
-private Tabuleiro tabuleiro;
-public BotaoCelula(int linha, int coluna, Tabuleiro tabuleiro) {
-this.linha = linha;
-this.coluna = coluna;
-this.tabuleiro = tabuleiro;
-setPreferredSize(new Dimension(40, 40));
-addActionListener(e -> {
-abrirCelula();
-});
-}
-private void abrirCelula() {
-Celula celula = tabuleiro.getCelula(linha, coluna);
-if (!celula.estaAberta()) {
-celula.abrir();
-if (celula.temMina()) {
-setText("Mina!");
-setBackground(Color.RED);
-} else {
-setText(String.valueOf(celula.getNumeroMinasAdjacentes()));
-setBackground(Color.LIGHT_GRAY);
-if (celula.getNumeroMinasAdjacentes() == 0) {
-// Se não houver minas ao redor, abre as células adjacentes
-abrirCelasAdjacentes();
-}
-}
-}
-// Verifica se o jogo acabou
-if (tabuleiro.verificarFimDeJogo()) {
-JOptionPane.showMessageDialog(this, "Você venceu!");
-}
-}
-private void abrirCelasAdjacentes() {
-for (int i = -1; i <= 1; i++) {
-for (int j = -1; j <= 1; j++) {
-int novaLinha = linha + i;
-int novaColuna = coluna + j;
-if (novaLinha >= 0 && novaLinha < tabuleiro.getAltura() &&
-novaColuna >= 0 && novaColuna < tabuleiro.getLargura()) {
-BotaoCelula botaoAdjacente = (BotaoCelula)
-tabuleiro.getCelula(novaLinha, novaColuna);
-if (!botaoAdjacente.estaAberta()) {
-botaoAdjacente.abrirCelula();
-}
-}
-}
-}
-}
+
+class BotaoCelula extends JButton {
+    private int linha;
+    private int coluna;
+    private Tabuleiro tabuleiro;
+    private BotaoCelula[][] botoes;
+
+    public BotaoCelula(int linha, int coluna, Tabuleiro tabuleiro, BotaoCelula[][] botoes) {
+        this.linha = linha;
+        this.coluna = coluna;
+        this.tabuleiro = tabuleiro;
+        this.botoes = botoes;
+
+        setPreferredSize(new Dimension(40, 40));
+        addActionListener(e -> abrirCelula());
+    }
+
+    public void abrirCelula() {
+        Celula celula = tabuleiro.getCelula(linha, coluna);
+
+        if (celula.estaAberta()) return;
+
+        celula.abrir();
+
+        if (celula.temMina()) {
+            setText("💣");
+            setBackground(Color.RED);
+            JOptionPane.showMessageDialog(this, "Game Over!");
+            return;
+        }
+
+        setBackground(Color.LIGHT_GRAY);
+
+        int minas = celula.getNumeroMinasAdjacentes();
+        if (minas > 0) {
+            setText(String.valueOf(minas));
+        } else {
+            abrirCelasAdjacentes();
+        }
+
+        if (tabuleiro.verificarFimDeJogo()) {
+            JOptionPane.showMessageDialog(this, "Você venceu!");
+        }
+    }
+
+    private void abrirCelasAdjacentes() {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int l = linha + i;
+                int c = coluna + j;
+
+                if (l >= 0 && l < tabuleiro.getAltura() &&
+                        c >= 0 && c < tabuleiro.getLargura()) {
+                    botoes[l][c].abrirCelula();
+                }
+            }
+        }
+    }
 }
